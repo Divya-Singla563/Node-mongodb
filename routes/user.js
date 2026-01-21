@@ -7,10 +7,11 @@ router.post("/signup", user.signup);
 router.post("/otpVerification", user.verify);
 router.post("/login", user.login);
 router.post("/updateProfile", authVerify, user.updateProfile);
-router.post("/forgotPassword",  user.forgotPassword);
-router.post("/forgotPasswordVerification",  user.forgotPasswordVerification);
+router.post("/forgotPassword", user.forgotPassword);
+router.post("/forgotPasswordVerification", user.forgotPasswordVerification);
 router.post("/resetPassword", authVerify, user.resetPassword);
 router.post("/changePassword", authVerify, user.changePassword);
 router.get("/getProfile", authVerify, user.getProfile);
+router.post("/socialLogin", user.firebaseLogin);
 
 module.exports = router;

@@ -38,6 +38,10 @@ jspm_packages/
 .env.local
 .env.production
 
+# Firebase
+backend-test-855e5-firebase-adminsdk-fbsvc-8a0483e304.json
+*-firebase-adminsdk-*.json
+
 # OS files
 .DS_Store
 Thumbs.db

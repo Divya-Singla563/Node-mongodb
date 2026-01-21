@@ -45,6 +45,14 @@ const userSchema = new moongoose.Schema(
     image_public_id: {
       type: String, // Cloudinary public_id
     },
+    socialProvider: {
+      type: String,
+      enum: ["google", "facebook", "apple", null],
+      default: null,
+    },
+    googleId: { type: String, default: null },
+    facebookId: { type: String, default: null },
+    appleId: { type: String, default: null },
   },
   {
     timestamps: true,

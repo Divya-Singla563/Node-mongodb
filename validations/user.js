@@ -27,6 +27,11 @@ module.exports.otpVericationValidation = joi.object({
   }),
 });
 
+module.exports.firebaseValidation = joi.object({
+  idToken: joi.string().required(),
+  socialProvider: joi.string().required(),
+});
+
 module.exports.loginValidation = joi.object({
   email: joi.string().pattern(emailRegex),
   password: joi.when("email", {

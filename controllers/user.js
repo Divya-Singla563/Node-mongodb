@@ -7,6 +7,7 @@ const {
   forgotPasswordValidation,
   passwordValidation,
   changePasswordValidation,
+  firebaseValidation
 } = require("../validations/user");
 
 module.exports.signup = async (req, res, next) => {
@@ -45,6 +46,20 @@ module.exports.login = async (req, res, next) => {
       return res.status(400).json({ message: error.details[0].message });
     }
     const result = await user.login(req.body);
+    return res.status(200).json(result);
+  } catch (error) {
+    console.log("login controller error", error);
+    next(error);
+  }
+};
+
+module.exports.firebaseLogin = async (req, res, next) => {
+  try {
+    const { error } = firebaseValidation.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+    const result = await user.firebaseLogin(req.body);
     return res.status(200).json(result);
   } catch (error) {
     console.log("login controller error", error);
@@ -139,3 +154,6 @@ module.exports.getProfile = async (req, res, next) => {
     next(error);
   }
 };
+
+const { users, } = require("../modals");
+

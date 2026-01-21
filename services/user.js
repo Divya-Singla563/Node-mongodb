@@ -8,6 +8,7 @@ const {
 } = require("../utils/mailer");
 const { createToken } = require("../utils/token");
 const Messages = require("../constants/messages").en;
+const admin = require("../config/firebase");
 
 module.exports.signup = async (data) => {
   try {
@@ -312,6 +313,104 @@ module.exports.login = async (data) => {
     throw error;
   }
 };
+
+
+module.exports.firebaseLogin = async (data) => {
+  try {
+    const { idToken, socialProvider } = data
+
+    if (!idToken || !socialProvider) {
+      throw new Error('Missing required fields');
+    }
+
+    // 1️⃣ Verify Firebase token
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+
+    const {
+      email,
+      name,
+      picture,
+      phone_number,
+      email_verified,
+      uid,
+      firebase,
+    } = decodedToken;
+
+    // 2️⃣ Validate provider (SECURITY CHECK)
+    const firebaseProvider = firebase.sign_in_provider;
+
+    const providerMap = {
+      google: "google.com",
+      facebook: "facebook.com",
+      apple: "apple.com",
+    };
+
+    if (providerMap[socialProvider] !== firebaseProvider) {
+      throw new Error('Social provider mismatch')
+    }
+
+    // 3️⃣ Provider-specific ID mapping
+    const providerFieldMap = {
+      google: { googleId: uid },
+      facebook: { facebookId: uid },
+      apple: { appleId: uid },
+    };
+
+    // 4️⃣ Find user
+    let user = await users.findOne({ email, isDeleted: false });
+
+    // 5️⃣ Create or update user
+    if (!user) {
+      user = await users.create({
+        full_name: name,
+        email,
+        phone_number,
+        isEmailVerified: email_verified,
+        profile_image: picture,
+        isSocialLogin: true,
+        socialProvider,
+        ...providerFieldMap[socialProvider],
+        password: null,
+      });
+    } else {
+      await users.updateOne(
+        { _id: user._id },
+        {
+          $set: {
+            isSocialLogin: true,
+            socialProvider,
+            ...providerFieldMap[socialProvider],
+          },
+        }
+      );
+    }
+
+    if (user.isBlocked) {
+      throw new Error("User blocked")
+    }
+
+    const tokenData = {
+      id: user._id,
+    };
+
+    const token = await createToken(tokenData);
+    const userObj = user.toObject();
+    return {
+      data: {
+        token,
+        ...userObj,
+      },
+      message: Messages.SUCCESS,
+      statusCode: 200,
+    };
+
+  } catch (error) {
+    console.error("Firebase login error:", error);
+    throw error;
+  }
+};
+
+
 
 module.exports.updateProfileService = async (data, userId) => {
   try {
