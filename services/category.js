@@ -1,4 +1,5 @@
-const { categories } = require("../modals");
+const { categories, users } = require("../modals");
+const { sendToMany, sendTopicNotification, sendMany } = require("../utils");
 
 module.exports.addCategory = async (data) => {
   try {
@@ -14,6 +15,31 @@ module.exports.addCategory = async (data) => {
       description,
       image,
     });
+
+    const allUsers = await users.find(
+      { fcmToken: { $exists: true, $ne: null, $ne: '' } },
+      { fcmToken: 1 }
+    );
+    const tokens = allUsers.map((u) => u.fcmToken);
+
+    //sending notification via topic
+    // await sendTopicNotification(
+    //   tokens, "New Category Added 🎉",
+    //   `Category "${name}" is now available`,
+    //   {
+    //     type: "CATEGORY",
+    //     categoryId: newCategory._id.toString(),
+    //   }
+    // )
+
+    await sendMany(
+      tokens, "New Category Added 🎉",
+      `Category "${name}" is now available`,
+      {
+        type: "CATEGORY",
+        categoryId: newCategory._id.toString(),
+      }
+    )
 
     return {
       message: "Category added successfully",

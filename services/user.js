@@ -259,9 +259,11 @@ module.exports.forgotPasswordVerification = async (data) => {
   }
 };
 
+
+
 module.exports.login = async (data) => {
   try {
-    const { email, password, phone_number, country_code, captchaToken } = data;
+    const { email, password, phone_number, country_code, captchaToken, fcmToken } = data;
 
     // if (!captchaToken) {
     //   throw new Error(
@@ -297,13 +299,19 @@ module.exports.login = async (data) => {
     const tokenData = {
       id: user._id,
     };
+    user = await users.findByIdAndUpdate(user._id, { fcmToken }, { new: true })
+
+    //to create topic
+    // await admin.messaging().subscribeToTopic([fcmToken], 'categories')
+
     const token = await createToken(tokenData);
     delete user.password;
 
+    const newUser = user.toObject()
     return {
       data: {
         token,
-        ...user,
+        ...newUser
       },
       message: Messages.LOGIN_SUCCESS,
       statusCode: 200,

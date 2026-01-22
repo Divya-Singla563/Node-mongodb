@@ -40,6 +40,7 @@ module.exports.loginValidation = joi.object({
     otherwise: joi.string().optional(),
   }),
   // captchaToken: joi.string().required(),
+  fcmToken: joi.string(),
   phone_number: joi.string().pattern(phoneNoRegex),
   country_code: joi.string().when("phone_number", {
     is: joi.exist(),
